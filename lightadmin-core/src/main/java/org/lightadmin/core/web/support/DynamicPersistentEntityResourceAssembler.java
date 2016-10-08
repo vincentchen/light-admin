@@ -16,7 +16,9 @@
 package org.lightadmin.core.web.support;
 
 import org.springframework.data.mapping.PersistentEntity;
+import org.springframework.data.mapping.context.PersistentEntities;
 import org.springframework.data.repository.core.EntityInformation;
+import org.springframework.data.repository.core.support.PersistentEntityInformation;
 import org.springframework.data.repository.support.Repositories;
 import org.springframework.data.rest.core.mapping.ResourceMappings;
 import org.springframework.data.rest.webmvc.PersistentEntityResourceAssembler;
@@ -47,7 +49,7 @@ public class DynamicPersistentEntityResourceAssembler extends PersistentEntityRe
     public Link getSelfLinkFor(Object instance) {
         Assert.notNull(instance, "Domain object must not be null!");
 
-        Repositories repositories = repositories(this);
+        PersistentEntities repositories = repositories(this);
 
         Class instanceType = instance.getClass();
         PersistentEntity<?, ?> entity = repositories.getPersistentEntity(instanceType);
@@ -56,8 +58,8 @@ public class DynamicPersistentEntityResourceAssembler extends PersistentEntityRe
             throw new IllegalArgumentException(String.format("Cannot create self link for %s! No persistent entity found!", instanceType));
         }
 
-        EntityInformation<Object, Serializable> entityInformation = repositories.getEntityInformationFor(instanceType);
-        Serializable id = entityInformation.getId(instance);
+        EntityInformation<Object, Serializable> entityInformation =new PersistentEntityInformation<>((PersistentEntity<Object, ?>) entity);
+        Serializable id = entityInformation.getId(entity);
 
         if (id == null) {
             return entityLinks(this).linkToCollectionResource(entity.getType()).withSelfRel();
@@ -66,8 +68,8 @@ public class DynamicPersistentEntityResourceAssembler extends PersistentEntityRe
         return entityLinks(this).linkToSingleResource(entity.getType(), id).withSelfRel();
     }
 
-    private static Repositories repositories(PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
-        return (Repositories) forDirectFieldAccess(persistentEntityResourceAssembler).getPropertyValue("repositories");
+    private static PersistentEntities repositories(PersistentEntityResourceAssembler persistentEntityResourceAssembler) {
+        return (PersistentEntities) forDirectFieldAccess(persistentEntityResourceAssembler).getPropertyValue("persistentEntities");
     }
 
     private static EntityLinks entityLinks(PersistentEntityResourceAssembler persistentEntityResourceAssembler) {

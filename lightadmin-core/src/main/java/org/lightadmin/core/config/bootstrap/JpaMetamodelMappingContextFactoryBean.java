@@ -22,6 +22,7 @@ import org.springframework.util.Assert;
 import javax.persistence.EntityManager;
 import javax.persistence.metamodel.ManagedType;
 import javax.persistence.metamodel.Metamodel;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -50,7 +51,10 @@ public class JpaMetamodelMappingContextFactoryBean extends AbstractFactoryBean<J
             }
         }
 
-        JpaMetamodelMappingContext context = new JpaMetamodelMappingContext(metamodel);
+        Set<Metamodel> metaModels=Collections.emptySet();
+        metaModels.add(metamodel);
+
+        JpaMetamodelMappingContext context = new JpaMetamodelMappingContext(metaModels);
         context.setInitialEntitySet(entitySources);
         context.initialize();
 
